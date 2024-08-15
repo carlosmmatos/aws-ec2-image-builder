@@ -1,0 +1,108 @@
+name: deploy-falcon-linux
+description: Deploy and Prepare CrowdStrike Falcon on Linux for Image Builder
+schemaVersion: 1.0
+parameters:
+  ### Authentication Parameters ###
+  - SecretStorageMethod:
+      type: string
+      default: 'SecretsManager'
+      description:
+        The secret backend to use which holds your API credentials. Accepted values
+        are [SecretsManager, ParamaterStore].
+  - SecretsManagerSecretName:
+      type: string
+      default: ' '
+      description:
+        (Required if using SecretsManager) The name of the secret in Secrets Manager that contains the
+        Falcon API credentials.
+  - SSMFalconCloud:
+      type: String
+      default: ' '
+      description:
+        (Required if using ParamaterStore) SSM Parameter Store name that contains the
+        Falcon Cloud Region for the Falcon API credentials.
+  - SSMFalconClientId:
+      type: String
+      default: ' '
+      description:
+        (Required if using ParamaterStore) SSM Parameter Store name that contains the
+        Falcon Client Id for the Falcon API credentials.
+  - SSMFalconClientSecret:
+      type: String
+      default: ' '
+      description:
+        (Required if using ParamaterStore) SSM Parameter Store name that contains the
+        Falcon Client Secret for the Falcon API credentials.
+  ### Installation Parameters ###
+  - SensorVersionDecrement:
+      type: string
+      default: ' '
+      description:
+        (Optional) The number of versions prior to the latest release to install. For example, use 1
+        to install the previous version (N-1).
+  - ProvisioningToken:
+      type: string
+      default: ' '
+      description:
+        (Optional) The provisioning/installation token to use for installing the sensor.
+  - SensorUpdatePolicyName:
+      type: string
+      default: ' '
+      description:
+        (Optional) The name of the sensor update policy to use for retrieving the sensor version.
+  - Tags:
+      type: string
+      default: ' '
+      description:
+        (Optional) A comma-separated list of tags to apply to the sensor.
+  - ProxyHost:
+      type: string
+      default: ' '
+      description:
+        (Optional) The proxy host for the sensor to use when communicating with CrowdStrike.
+  - ProxyPort:
+      type: string
+      default: ' '
+      description:
+        (Optional) The proxy port for the sensor to use when communicating with CrowdStrike.
+  - Billing:
+      type: string
+      default: ' '
+      description:
+        (Optional) The billing code to use for the sensor. Accepted values are [default, metered].
+
+phases:
+  - name: build
+    steps:
+      # - name: DownloadScript
+      #   action: WebDownload
+      #   maxAttempts: 3
+      #   inputs:
+      #     - source: 'https://raw.githubusercontent.com/crowdstrike/ec2-image-builder/main/deploy-falcon-build.sh'
+      #       destination: '/tmp/deploy-falcon-build.sh'
+      - name: Install
+        action: ExecuteBash
+        inputs:
+          commands:
+            - >
+              bash deploy-falcon-build.sh
+              "{{ SecretStorageMethod }}"
+              "{{ SecretsManagerSecretName }}"
+              "{{ SSMFalconCloud }}"
+              "{{ SSMFalconClientId }}"
+              "{{ SSMFalconClientSecret }}"
+              "{{ SensorVersionDecrement }}"
+              "{{ ProvisioningToken }}"
+              "{{ SensorUpdatePolicyName }}"
+              "{{ Tags }}"
+              "{{ ProxyHost }}"
+              "{{ ProxyPort }}"
+              "{{ Billing }}"
+
+  # - name: validate
+  #   steps:
+  #     - name: HelloWorldStep
+  #       action: ExecuteBash
+  #       inputs:
+  #         commands:
+  #           - sudo /opt/CrowdStrike/falconctl -g --aid
