@@ -71,7 +71,7 @@ phases:
         action: WebDownload
         maxAttempts: 3
         inputs:
-          - source: "https://raw.githubusercontent.com/crowdstrike/ec2-image-builder/main/deploy-falcon-build.sh"
+          - source: "https://raw.githubusercontent.com/CrowdStrike/aws-ec2-image-builder/refs/heads/main/scripts/deploy-falcon-linux.sh"
             destination: "/tmp/deploy-falcon-build.sh"
 
       - name: FalconPrep
