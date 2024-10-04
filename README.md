@@ -4,6 +4,9 @@
 
 # AWS EC2 Image Builder Component for CrowdStrike Falcon Sensor
 
+> [!IMPORTANT]
+> This is currently a work in progress and is not yet available in the AWS Marketplace. Please check back soon for updates.
+
 This repository contains an AWS EC2 Image Builder component for Linux that installs and configures the CrowdStrike Falcon sensor, preparing it as a master/golden image for your AWS environment.
 
 The component automates the installation of the CrowdStrike Falcon sensor on an EC2 instance during the image building process. It's designed to be the final step in your image pipeline to ensure proper configuration and prevent interference from system reboots.
