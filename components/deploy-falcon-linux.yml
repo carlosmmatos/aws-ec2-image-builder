@@ -4,10 +4,14 @@ schemaVersion: 1.0
 parameters:
   ### Authentication Parameters ###
   - SecretStorageMethod:
+      type: string
       default: "SecretsManager"
       description:
         The secret backend to use which holds your API credentials. Accepted values
         are [SecretsManager, ParamaterStore].
+      allowedValues:
+        - "SecretsManager"
+        - "ParamaterStore"
   - SecretsManagerSecretName:
       type: string
       default: " "
