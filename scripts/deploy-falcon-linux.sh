@@ -212,6 +212,7 @@ setup_env_vars() {
         "FALCON_APH:$PROXY_HOST"
         "FALCON_APP:$PROXY_PORT"
         "FALCON_BILLING:$BILLING"
+        "PREP_GOLDEN_IMAGE:true"
     )
 
     for param in "${script_args[@]}"; do
