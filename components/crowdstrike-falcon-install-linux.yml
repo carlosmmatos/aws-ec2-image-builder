@@ -1,5 +1,8 @@
 name: crowdstrike-falcon-install-linux
-description: Deploy and Prepare CrowdStrike Falcon on Linux for Image Builder
+description:
+  Installs and configures the CrowdStrike Falcon sensor for Linux as a reusable template. This
+  component should be executed last in the build process to prevent premature reboots, which
+  could trigger unintended results.
 schemaVersion: 1.0
 parameters:
   ### Authentication Parameters ###
