@@ -186,19 +186,6 @@ get_value_from_secret() {
     echo "$value"
 }
 
-## Download Falcon Scripts
-download_install_script() {
-    local script_url="https://raw.githubusercontent.com/crowdstrike/falcon-scripts/main/bash/install/falcon-linux-install.sh"
-    local script_path="/tmp/falcon-linux-install.sh"
-
-    log "Downloading Falcon sensor installation script..."
-    if ! curl -sSf "$script_url" -o "$script_path"; then
-        die "Failed to download Falcon sensor installation script."
-    fi
-    chmod +x "$script_path"
-    echo "$script_path"
-}
-
 ## Install Falcon Sensor
 setup_env_vars() {
     local script_args=(
@@ -257,8 +244,8 @@ main() {
             ;;
     esac
 
-    local script_path
-    script_path=$(download_install_script)
+    local script_path="/tmp/falcon-linux-install.sh"
+    chmod +x "$script_path"
     install_falcon_sensor "$script_path"
 }
 

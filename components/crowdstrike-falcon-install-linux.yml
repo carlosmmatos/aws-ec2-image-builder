@@ -78,8 +78,10 @@ phases:
         action: WebDownload
         maxAttempts: 3
         inputs:
-          - source: "https://raw.githubusercontent.com/CrowdStrike/aws-ec2-image-builder/refs/heads/main/scripts/deploy-falcon-linux.sh"
+          - source: "https://raw.githubusercontent.com/CrowdStrike/aws-ec2-image-builder/refs/heads/v1.0.0/scripts/deploy-falcon-linux.sh"
             destination: "/tmp/deploy-falcon-build.sh"
+          - source: "https://raw.githubusercontent.com/crowdstrike/falcon-scripts/v1.7.1/bash/install/falcon-linux-install.sh"
+            destination: "/tmp/falcon-linux-install.sh"
 
       - name: ComponentTestingRequirement
         action: ExecuteBash
