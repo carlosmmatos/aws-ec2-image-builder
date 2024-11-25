@@ -17,7 +17,7 @@ parameters:
         - "ParamaterStore"
   - SecretsManagerSecretName:
       type: string
-      default: " "
+      default: "/CrowdStrike/Falcon/Image-Builder"
       description:
         (Required if using SecretsManager) The name of the secret in Secrets Manager that contains the
         Falcon API credentials.
@@ -86,6 +86,7 @@ phases:
         inputs:
           commands:
             - >
+              # aws secretsmanager get-secret-value --secret-id "{{ SecretsManagerSecretName }}" --query 'SecretString' --output text > /dev/null 2>&1
               bash "{{ build.DownloadScript.inputs[0].destination }}"
               "{{ SecretStorageMethod }}"
               "{{ SecretsManagerSecretName }}"
@@ -106,4 +107,26 @@ phases:
         action: ExecuteBash
         inputs:
           commands:
-            - sudo /opt/CrowdStrike/falconctl -g --aid | grep -q 'aid is not set' || exit 1
+            - |
+              AID=$(sudo /opt/CrowdStrike/falconctl -g --aid | awk -F '"' '{print $2}')
+              if [[ -z "$AID" ]]; then
+                echo "Success: AID is not set"
+              else
+                echo "Error: AID is set when it should NOT be. Ensure this component is the last component that runs!"
+                exit 1
+              fi
+
+  - name: test
+    steps:
+      - name: EnsureAidPresent
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              AID=$(sudo /opt/CrowdStrike/falconctl -g --aid | awk -F '"' '{print $2}')
+              if [[ -z "$AID" ]]; then
+                echo "Error: AID is not set! Check the logs for potential errors."
+                exit 1
+              else
+                echo "Success: AID is set"
+              fi
