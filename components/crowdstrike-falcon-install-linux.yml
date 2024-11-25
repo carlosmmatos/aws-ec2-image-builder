@@ -81,12 +81,18 @@ phases:
           - source: "https://raw.githubusercontent.com/CrowdStrike/aws-ec2-image-builder/refs/heads/main/scripts/deploy-falcon-linux.sh"
             destination: "/tmp/deploy-falcon-build.sh"
 
+      - name: ComponentTestingRequirement
+        action: ExecuteBash
+        inputs:
+          commands:
+            - >
+              # aws secretsmanager get-secret-value --secret-id "{{ SecretsManagerSecretName }}" --query 'SecretString' --output text
+
       - name: FalconPrep
         action: ExecuteBash
         inputs:
           commands:
             - >
-              # aws secretsmanager get-secret-value --secret-id "{{ SecretsManagerSecretName }}" --query 'SecretString' --output text > /dev/null 2>&1
               bash "{{ build.DownloadScript.inputs[0].destination }}"
               "{{ SecretStorageMethod }}"
               "{{ SecretsManagerSecretName }}"
