@@ -156,7 +156,7 @@ get_ssm_parameter() {
     local parameter_name=$1
     local parameter_value
 
-    if ! parameter_value=$(aws ssm get-parameter --name "$parameter_name" --with-decryption --query 'Parameter.Value' --output text 2>/dev/null); then
+    if ! parameter_value=$(aws ssm get-parameter --name "$parameter_name" --with-decryption --query 'Parameter.Value' --output text); then
         die "Failed to retrieve SSM parameter: $parameter_name"
     fi
     echo "$parameter_value"
@@ -167,7 +167,7 @@ get_secret() {
     local secret_name=$1
     local secret_value
 
-    if ! secret_value=$(aws secretsmanager get-secret-value --secret-id "$secret_name" --query 'SecretString' --output text 2>/dev/null); then
+    if ! secret_value=$(aws secretsmanager get-secret-value --secret-id "$secret_name" --query 'SecretString' --output text); then
         die "Failed to retrieve Secrets Manager secret: $secret_name"
     fi
     echo "$secret_value"
