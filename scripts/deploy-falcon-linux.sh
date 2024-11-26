@@ -17,7 +17,7 @@ TAGS="${9:-}"
 PROXY_HOST="${10:-}"
 PROXY_PORT="${11:-}"
 BILLING="${12:-}"
-# INSTALLED_AWS_CLI=false
+INSTALLED_AWS_CLI=false
 
 ## DEBUG INPUTS ##
 # For each of the input parameters, lets print them out
@@ -116,47 +116,47 @@ validate_auth_input() {
 ### Validate AWS CLI
 check_aws_cli() {
     if ! command -v aws &>/dev/null; then
-        die "AWS CLI is not installed. Please install AWS CLI."
-        # log "AWS CLI is not installed. Installing AWS CLI..."
-        # install_aws_cli
+        # die "AWS CLI is not installed. Please install AWS CLI."
+        log "AWS CLI is not installed. Installing AWS CLI..."
+        install_aws_cli
     else
         log "AWS CLI is installed."
     fi
 }
 
-# install_aws_cli() {
-#     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-#     unzip awscliv2.zip
-#     sudo ./aws/install
-#     rm -rf aws awscliv2.zip
-#     # if /usr/local/bin is not in the PATH, add it
-#     if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
-#         export PATH=$PATH:/usr/local/bin
-#     fi
-#     # check if we can run aws command
-#     if ! command -v aws &>/dev/null; then
-#         die "Failed to install AWS CLI."
-#     fi
-#     log "AWS CLI has been installed."
-#     INSTALLED_AWS_CLI=true
-# }
+install_aws_cli() {
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    sudo ./aws/install
+    rm -rf aws awscliv2.zip
+    # if /usr/local/bin is not in the PATH, add it
+    if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
+        export PATH=$PATH:/usr/local/bin
+    fi
+    # check if we can run aws command
+    if ! command -v aws &>/dev/null; then
+        die "Failed to install AWS CLI."
+    fi
+    log "AWS CLI has been installed."
+    INSTALLED_AWS_CLI=true
+}
 
-# remove_aws_cli() {
-#     if [[ "$INSTALLED_AWS_CLI" == true ]]; then
-#         log "Removing AWS CLI..."
-#         sudo rm /usr/local/bin/aws
-#         sudo rm /usr/local/bin/aws_completer
-#         sudo rm -rf /usr/local/aws-cli
-#         log "AWS CLI has been removed."
-#     fi
-# }
+remove_aws_cli() {
+    if [[ "$INSTALLED_AWS_CLI" == true ]]; then
+        log "Removing AWS CLI..."
+        sudo rm /usr/local/bin/aws
+        sudo rm /usr/local/bin/aws_completer
+        sudo rm -rf /usr/local/aws-cli
+        log "AWS CLI has been removed."
+    fi
+}
 
 ## SSM Parameter Store
 get_ssm_parameter() {
     local parameter_name=$1
     local parameter_value
 
-    if ! parameter_value=$(aws ssm get-parameter --name "$parameter_name" --with-decryption --query 'Parameter.Value' --output text); then
+    if ! parameter_value=$(aws ssm get-parameter --name "$parameter_name" --with-decryption --query 'Parameter.Value' --output text 2>/dev/null); then
         die "Failed to retrieve SSM parameter: $parameter_name"
     fi
     echo "$parameter_value"
@@ -167,7 +167,7 @@ get_secret() {
     local secret_name=$1
     local secret_value
 
-    if ! secret_value=$(aws secretsmanager get-secret-value --secret-id "$secret_name" --query 'SecretString' --output text); then
+    if ! secret_value=$(aws secretsmanager get-secret-value --secret-id "$secret_name" --query 'SecretString' --output text 2>/dev/null); then
         die "Failed to retrieve Secrets Manager secret: $secret_name"
     fi
     echo "$secret_value"
@@ -228,6 +228,7 @@ install_falcon_sensor() {
 main() {
     sanitize_input_params
     validate_auth_input
+    check_aws_cli
 
     case $SECRET_STORAGE_METHOD in
         "SecretsManager")
@@ -244,6 +245,8 @@ main() {
             ;;
     esac
 
+    # We don't want to be in the business of dep management, so if we install it, let's remove it.
+    remove_aws_cli
     local script_path="/tmp/falcon-linux-install.sh"
     chmod +x "$script_path"
     install_falcon_sensor "$script_path"
