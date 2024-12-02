@@ -15,13 +15,12 @@ The component automates the installation of the CrowdStrike Falcon sensor on an 
 
 Before using this component, ensure the following requirements are met:
 
-1. **AWS CLI**: The AWS CLI version 2 must be installed on the instance. This can be accomplished by including the AWS-provided `aws-cli-version-2-linux` component in your image recipe.
+1. **API Credentials**: Store your CrowdStrike API credentials securely in either AWS Secrets Manager or AWS Systems Manager Parameter Store as SecretStrings.
 
-2. **API Credentials**: Store your CrowdStrike API credentials securely in either AWS Secrets Manager or AWS Systems Manager Parameter Store as SecretStrings.
 > [!TIP]
 > For more information on generating API keys and storing them securely, see [API Credentials](#api-credentials) below.
 
-3. **IAM Permissions**: The IAM role used for the Image pipeline must have the necessary IAM permissions to access the stored credentials.
+2. **IAM Permissions**: The IAM role used for the Image pipeline must have the necessary IAM permissions to access the stored credentials.
 
 ## API Credentials
 
@@ -32,11 +31,11 @@ The component uses the CrowdStrike API to download the sensor onto the target in
 1. In the CrowdStrike console, navigate to **Support and resources** > **API Clients & Keys**. Click **Add new API Client**.
 2. Add the following API scopes:
 
-    | Scope               | Permission | Description                                                                  |
-    | ------------------- | ---------- | ---------------------------------------------------------------------------- |
-    | **Installation Tokens** | *READ*     | Allows the component to pull installation tokens from the CrowdStrike API. |
-    | **Sensor Download**     | *READ*     | Allows the component to download the sensor from the CrowdStrike API.      |
-    | **Sensor update policies** | *READ* | Allows the component to read sensor update policies from the CrowdStrike API. |
+    | Scope                      | Permission | Description                                                                   |
+    | -------------------------- | ---------- | ----------------------------------------------------------------------------- |
+    | **Installation Tokens**    | *READ*     | Allows the component to pull installation tokens from the CrowdStrike API.    |
+    | **Sensor Download**        | *READ*     | Allows the component to download the sensor from the CrowdStrike API.         |
+    | **Sensor update policies** | *READ*     | Allows the component to read sensor update policies from the CrowdStrike API. |
 
 3. Click **Add** to create the API client. The next screen will display the API **CLIENT ID**, **SECRET**, and **BASE URL**. You will need all three for the next step.
 
@@ -49,12 +48,12 @@ The component uses the CrowdStrike API to download the sensor onto the target in
 
 The CrowdStrike API base URL is determined by the region where your CrowdStrike tenant is hosted. Use the following table to map the CrowdStrike API base URL to the Cloud Region to be used by the component:
 
-| BASE URL                                  | CLOUD REGION          |
-| ----------------------------------------- | --------------------- |
-| `https://api.crowdstrike.com`             | **us-1**              |
-| `https://api.us-2.crowdstrike.com`        | **us-2**              |
-| `https://api.eu-1.crowdstrike.com`        | **eu-1**              |
-| `https://api.laggar.gcw.crowdstrike.com`  | **us-gov-1**          |
+| BASE URL                                 | CLOUD REGION |
+| ---------------------------------------- | ------------ |
+| `https://api.crowdstrike.com`            | **us-1**     |
+| `https://api.us-2.crowdstrike.com`       | **us-2**     |
+| `https://api.eu-1.crowdstrike.com`       | **eu-1**     |
+| `https://api.laggar.gcw.crowdstrike.com` | **us-gov-1** |
 
 ### Store API Credentials
 
@@ -66,11 +65,11 @@ To use Secrets Manager as your secret backend, you must enter `SecretsManager` a
 
 Use the following as an example to create a secret with the following key/value pairs:
 
-| Key          | Value                                                           | *Example*                        |
-| ------------ | --------------------------------------------------------------- | -------------------------------- |
-| ClientId     | The **CLIENT ID** from [Generate API Keys](#generate-api-keys). | 123456789abcdefg                 |
-| ClientSecret | The **SECRET** from [Generate API Keys](#generate-api-keys).    | 123456789abcdefg123456789abcdefg |
-| Cloud        | The **CLOUD REGION** from [Base URL Mapping](#base-url-mapping).| us-2                             |
+| Key          | Value                                                            | *Example*                        |
+| ------------ | ---------------------------------------------------------------- | -------------------------------- |
+| ClientId     | The **CLIENT ID** from [Generate API Keys](#generate-api-keys).  | 123456789abcdefg                 |
+| ClientSecret | The **SECRET** from [Generate API Keys](#generate-api-keys).     | 123456789abcdefg123456789abcdefg |
+| Cloud        | The **CLOUD REGION** from [Base URL Mapping](#base-url-mapping). | us-2                             |
 
 You can use any secret name you like, as long as you pass in the secret name when using the component.
 
@@ -103,15 +102,32 @@ TBD - Marketplace link/instructions
 To use this component in your EC2 Image Builder pipeline:
 
 1. Add this component as the final step in your image recipe.
-2. Ensure the `aws-cli-version-2-linux` component (or equivalent) is included earlier in the recipe.
+
+> [!IMPORTANT]
+> Adding this component as the last step in your image recipe ensures that the sensor doesn't generate a new AID prior to shutdown.
 
 ## Usage
 
-The component will automatically execute during the image building process. It performs the following actions:
+The component will automatically execute during the image build process. It performs the following actions:
+
+### Build Phase
 
 1. Retrieves the CrowdStrike API credentials from the specified secret store.
+
+> [!NOTE]
+> Due to a current limitation in EC2 Image Builder where the AWS CLI is not guaranteed to be pre-installed, this component includes a step to verify and install the AWS CLI if needed. This extra verification is required to ensure we can securely retrieve the credentials.
+
 2. Downloads and installs the CrowdStrike Falcon sensor.
+
 3. Configures the sensor for use as a master/golden image.
+
+### Validate Phase
+
+1. Ensures the AID is absent from the sensor prior to shutdown.
+
+### Test Phase
+
+1. Ensures the AID is present after a test instance is spun up.
 
 ## Configuration
 

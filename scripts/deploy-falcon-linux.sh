@@ -114,15 +114,15 @@ validate_auth_input() {
 }
 
 ### Validate AWS CLI
-check_aws_cli() {
-    if ! command -v aws &>/dev/null; then
-        die "AWS CLI is not installed. Please install AWS CLI."
-        # log "AWS CLI is not installed. Installing AWS CLI..."
-        # install_aws_cli
-    else
-        log "AWS CLI is installed."
-    fi
-}
+# check_aws_cli() {
+#     if ! command -v aws &>/dev/null; then
+#         # die "AWS CLI is not installed. Please install AWS CLI."
+#         log "AWS CLI is not installed. Installing AWS CLI..."
+#         install_aws_cli
+#     else
+#         log "AWS CLI is installed."
+#     fi
+# }
 
 # install_aws_cli() {
 #     curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
