@@ -83,6 +83,11 @@ phases:
           - source: "https://raw.githubusercontent.com/crowdstrike/falcon-scripts/v1.7.1/bash/install/falcon-linux-install.sh"
             destination: "/tmp/falcon-linux-install.sh"
 
+      - name: InstallAWScli
+        action: ExecuteDocument
+        inputs:
+          document: arn:aws:imagebuilder:us-east-1:aws:component/aws-cli-version-2-linux/1.0.4/1
+
       - name: ComponentTestingRequirement
         action: ExecuteBash
         inputs:
