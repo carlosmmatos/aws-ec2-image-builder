@@ -44,11 +44,11 @@ AWS_CLI_REGION="${13:-}"
 
 log() {
     local log_level=${2:-INFO}
-    echo "[$(date +'%Y-%m-%dT%H:%M:%S')] $log_level: $1" >&2
+    echo "[$(date +'%Y-%m-%dT%H:%M:%S')] $log_level: $1"
 }
 
 die() {
-    log "$1" "ERROR"
+    log "$1" "ERROR" >&2
     exit 1
 }
 
