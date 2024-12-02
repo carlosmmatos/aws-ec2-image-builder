@@ -15,6 +15,13 @@ parameters:
       allowedValues:
         - "SecretsManager"
         - "ParamaterStore"
+  - AWSRegion:
+      type: string
+      default: "us-east-1"
+      description:
+        The AWS Region (e.g. us-east-1, eu-west-1) where either the Secrets Manager
+        secret or SSM Parameter Store parameter containing the Falcon API credentials are
+        stored.
   - SecretsManagerSecretName:
       type: string
       default: "/CrowdStrike/Falcon/Image-Builder"
@@ -93,7 +100,7 @@ phases:
         inputs:
           commands:
             - >
-              # aws secretsmanager get-secret-value --secret-id "{{ SecretsManagerSecretName }}" --query 'SecretString' --output text
+              # aws secretsmanager get-secret-value --secret-id "{{ SecretsManagerSecretName }}" --query 'SecretString' --output text --region "{{ AWSRegion }}"
 
       - name: FalconPrep
         action: ExecuteBash
@@ -113,6 +120,7 @@ phases:
               "{{ ProxyHost }}"
               "{{ ProxyPort }}"
               "{{ Billing }}"
+              "{{ AWSRegion }}"
 
   - name: validate
     steps:

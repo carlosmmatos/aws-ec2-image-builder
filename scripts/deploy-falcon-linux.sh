@@ -17,6 +17,7 @@ TAGS="${9:-}"
 PROXY_HOST="${10:-}"
 PROXY_PORT="${11:-}"
 BILLING="${12:-}"
+AWS_CLI_REGION="${13:-}"
 # INSTALLED_AWS_CLI=false
 
 ## DEBUG INPUTS ##
@@ -111,6 +112,16 @@ validate_auth_input() {
             [[ "$invalid" == true ]] && exit 1
             ;;
     esac
+}
+
+set_cli_region() {
+    # Validate AWS_CLI_REGION then set
+    if [[ -z "$AWS_CLI_REGION" ]]; then
+        die "AWSRegion parameter was not provided."
+    else
+        log "Setting AWS CLI region to: $AWS_CLI_REGION"
+        export AWS_DEFAULT_REGION="$AWS_CLI_REGION"
+    fi
 }
 
 ### Validate AWS CLI
@@ -228,6 +239,7 @@ install_falcon_sensor() {
 main() {
     sanitize_input_params
     validate_auth_input
+    set_cli_region
 
     case $SECRET_STORAGE_METHOD in
         "SecretsManager")
