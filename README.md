@@ -47,10 +47,10 @@ The CrowdStrike API base URL is determined by the region where your CrowdStrike 
 
 | BASE URL                                 | CLOUD REGION |
 | ---------------------------------------- | ------------ |
-| `https://api.crowdstrike.com`            | **us-1**     |
-| `https://api.us-2.crowdstrike.com`       | **us-2**     |
-| `https://api.eu-1.crowdstrike.com`       | **eu-1**     |
-| `https://api.laggar.gcw.crowdstrike.com` | **us-gov-1** |
+| `https://api.crowdstrike.com`            | us-1         |
+| `https://api.us-2.crowdstrike.com`       | us-2         |
+| `https://api.eu-1.crowdstrike.com`       | eu-1         |
+| `https://api.laggar.gcw.crowdstrike.com` | us-gov-1     |
 
 ### Store API Credentials
 
@@ -157,21 +157,21 @@ The component will automatically execute during the image build process. It perf
 
 ## Component Parameters
 
-| Parameter                    | Type   | Default                           | Description                                                                                                                               | Allowed Values                 |
-| ---------------------------- | ------ | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| **SecretStorageMethod**      | string | SecretsManager                    | The secret backend to use which holds your API credentials.                                                                               | SecretsManager, ParameterStore |
-| **AWSRegion**                | string | us-east-1                         | The AWS Region where either the Secrets Manager secret or SSM Parameter Store parameter containing the Falcon API credentials are stored. | N/A                            |
-| **SecretsManagerSecretName** | string | /CrowdStrike/Falcon/Image-Builder | (***Required if using SecretsManager***) The name of the secret in Secrets Manager that contains the Falcon API credentials.              | N/A                            |
-| **SSMFalconCloud**           | string |                                   | ***(Required if using ParameterStore)*** SSM Parameter Store name that contains the Falcon Cloud Region for the Falcon API credentials.   | N/A                            |
-| **SSMFalconClientId**        | string |                                   | ***(Required if using ParameterStore)*** SSM Parameter Store name that contains the Falcon Client Id for the Falcon API credentials.      | N/A                            |
-| **SSMFalconClientSecret**    | string |                                   | ***(Required if using ParameterStore)*** SSM Parameter Store name that contains the Falcon Client Secret for the Falcon API credentials.  | N/A                            |
-| **SensorVersionDecrement**   | string |                                   | (Optional) The number of versions prior to the latest release to install. For example, use 1 to install the previous version (N-1).       | N/A                            |
-| **ProvisioningToken**        | string |                                   | (Optional) The provisioning/installation token to use for installing the sensor.                                                          | N/A                            |
-| **SensorUpdatePolicyName**   | string |                                   | (Optional) The name of the sensor update policy to use for retrieving the sensor version.                                                 | N/A                            |
-| **Tags**                     | string |                                   | (Optional) A comma-separated list of tags to apply to the sensor.                                                                         | N/A                            |
-| **ProxyHost**                | string |                                   | (Optional) The proxy host for the sensor to use when communicating with CrowdStrike.                                                      | N/A                            |
-| **ProxyPort**                | string |                                   | (Optional) The proxy port for the sensor to use when communicating with CrowdStrike.                                                      | N/A                            |
-| **Billing**                  | string |                                   | (Optional) The billing code to use for the sensor.                                                                                        | default, metered               |
+| Parameter Name             | Type   | Description                                                                                                                               | Default                                 | Allowed Values                 |
+| -------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------       | ------------------------------ |
+| `SecretStorageMethod`      | string | The secret backend to use which holds your API credentials.                                                                               | ***SecretsManager***                    | SecretsManager, ParameterStore |
+| `AWSRegion`                | string | The AWS Region where either the Secrets Manager secret or SSM Parameter Store parameter containing the Falcon API credentials are stored. | ***us-east-1***                         | N/A                            |
+| `SecretsManagerSecretName` | string | (***Required if using SecretsManager***) The name of the secret in Secrets Manager that contains the Falcon API credentials.              | ***/CrowdStrike/Falcon/Image-Builder*** | N/A                            |
+| `SSMFalconCloud`           | string | ***(Required if using ParameterStore)*** SSM Parameter Store name that contains the Falcon Cloud Region for the Falcon API credentials.   |                                         | N/A                            |
+| `SSMFalconClientId`        | string | ***(Required if using ParameterStore)*** SSM Parameter Store name that contains the Falcon Client Id for the Falcon API credentials.      |                                         | N/A                            |
+| `SSMFalconClientSecret`    | string | ***(Required if using ParameterStore)*** SSM Parameter Store name that contains the Falcon Client Secret for the Falcon API credentials.  |                                         | N/A                            |
+| `SensorVersionDecrement`   | string | (Optional) The number of versions prior to the latest release to install. For example, use 1 to install the previous version (N-1).       |                                         | N/A                            |
+| `ProvisioningToken`        | string | (Optional) The provisioning/installation token to use for installing the sensor.                                                          |                                         | N/A                            |
+| `SensorUpdatePolicyName`   | string | (Optional) The name of the sensor update policy to use for retrieving the sensor version.                                                 |                                         | N/A                            |
+| `Tags`                     | string | (Optional) A comma-separated list of tags to apply to the sensor.                                                                         |                                         | N/A                            |
+| `ProxyHost`                | string | (Optional) The proxy host for the sensor to use when communicating with CrowdStrike.                                                      |                                         | N/A                            |
+| `ProxyPort`                | string | (Optional) The proxy port for the sensor to use when communicating with CrowdStrike.                                                      |                                         | N/A                            |
+| `Billing`                  | string | (Optional) The billing code to use for the sensor.                                                                                        |                                         | default, metered               |
 
 ## Troubleshooting
 
