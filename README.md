@@ -70,7 +70,7 @@ Use the following as an example to create a secret with the following key/value 
 
 You can use any secret name you like, as long as you pass in the secret name when using the component.
 
-> [!IMPORTANT]
+> :warning:
 > The keys must match the table above.
 
 </details>
@@ -87,7 +87,7 @@ Use the following as an example to create the parameters in Parameter Store:
 | /CrowdStrike/Falcon/ClientSecret | The **SECRET** from [Generate API Keys](#generate-api-keys).     | SecureString   | 123456789abcdefg123456789abcdefg |
 | /CrowdStrike/Falcon/Cloud        | The **CLOUD REGION** from [Base URL Mapping](#base-url-mapping). | SecureString   | us-2                             |
 
-> [!NOTE]
+> :warning:
 > You can use any parameter name you like, as long as you pass in the correct names for the SSM Parameters in the component.
 
 </details>
