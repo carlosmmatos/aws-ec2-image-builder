@@ -73,7 +73,6 @@ function Test-InputParams {
         "ProxyHost",
         "ProxyPort",
         "ProxyDisable",
-        "InstallParams",
         "AWSRegion"
     )
 
