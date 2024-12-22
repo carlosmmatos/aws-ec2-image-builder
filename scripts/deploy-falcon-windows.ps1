@@ -56,7 +56,7 @@ function Write-Log {
         [string]$Level = "INFO",
         [string]$Message
     )
-    Write-Host "[$([DateTime]::Now.ToString('yyyy-MM-ddTHH:mm:ss'))] $Level\: $Message"
+    Write-Host "[$([DateTime]::Now.ToString('yyyy-MM-ddTHH:mm:ss'))] $Level : $Message"
 }
 
 function Test-InputParams {

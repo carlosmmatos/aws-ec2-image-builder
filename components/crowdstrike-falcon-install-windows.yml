@@ -2,10 +2,9 @@ name: crowdstrike-falcon-install-windows
 description: Deploy and Prepare CrowdStrike Falcon on Windows for Image Builder
 schemaVersion: 1.0
 parameters:
-  ### Authentication Parameters ###
   - SecretStorageMethod:
       type: string
-      default: "ParameterStore"
+      default: "SecretsManager"
       description:
         The secret backend to use which holds your API credentials. Accepted values
         are [SecretsManager, ParameterStore].
@@ -43,14 +42,13 @@ parameters:
       description:
         (Required if using ParameterStore) SSM Parameter Store name that contains the
         Falcon Client Secret for the Falcon API credentials.
-  ### Installation Parameters ###
   - ProvisioningToken:
       type: string
       default: " "
       description: (Optional) The provisioning/installation token to use for installing the sensor.
   - ProvisioningWaitTime:
-      type: integer
-      default: 1200000
+      type: string
+      default: "1200000"
       description: (Optional) Time to wait, in milliseconds, for sensor to provision before timing out.
   - SensorUpdatePolicyName:
       type: string
@@ -69,11 +67,14 @@ parameters:
       default: " "
       description: (Optional) The proxy port for the sensor to use when communicating with CrowdStrike.
   - ProxyDisable:
-      type: boolean
-      default: false
+      type: string
+      default: "false"
       description:
         By default, the Falcon sensor for Windows automatically attempts to use any available proxy connections when it connects to the CrowdStrike cloud.
-        This parameter forces the sensor to skip those attempts and ignore any proxy configuration, including Windows Proxy Auto Detection.
+        This parameter forces the sensor to skip those attempts and ignore any proxy configuration, including Windows Proxy Auto Detection. Accepted values are [true, false].
+      allowedValues:
+        - "true"
+        - "false"
 
 phases:
   - name: build
@@ -116,7 +117,7 @@ phases:
                 -Tags "{{ Tags }}" `
                 -ProxyHost "{{ ProxyHost }}" `
                 -ProxyPort "{{ ProxyPort }}" `
-                $(if (${{ ProxyDisable }} -eq $true) { "-ProxyDisable" }) `
+                $(if ("{{ ProxyDisable }}" -eq "true") { "-ProxyDisable" }) `
                 -AWSRegion "{{ AWSRegion }}"
 
   - name: validate
