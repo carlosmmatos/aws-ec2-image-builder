@@ -184,7 +184,7 @@ try {
     if ($InstallParams) { $scriptArgs += "-InstallParams '$InstallParams'" }
 
     $scriptCommand = "& '$installScript' $($scriptArgs -join ' ')"
-    Write-Log -Message "Executing Falcon installation script..."
+    Write-Log -Message "Executing Falcon installation script with: $scriptCommand"
     Invoke-Expression $scriptCommand
 }
 catch {
