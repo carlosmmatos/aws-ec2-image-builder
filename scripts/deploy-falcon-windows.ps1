@@ -45,10 +45,7 @@ param(
     [string] $ProxyPort,
 
     [Parameter(Mandatory = $false)]
-    [switch] $ProxyDisable,
-
-    [Parameter(Mandatory = $false)]
-    [string] $InstallParams = '/install /quiet /noreboot VDI=1 NO_START=1'
+    [switch] $ProxyDisable
 )
 
 function Write-Log {
@@ -181,7 +178,8 @@ try {
     if ($ProxyHost) { $scriptArgs += "-ProxyHost '$ProxyHost'" }
     if ($ProxyPort) { $scriptArgs += "-ProxyPort '$ProxyPort'" }
     if ($ProxyDisable) { $scriptArgs += "-ProxyDisable" }
-    if ($InstallParams) { $scriptArgs += "-InstallParams '$InstallParams'" }
+    # Add install params to configure VM Template
+    $scriptArgs += "-InstallParams '/install /quiet /noreboot VDI=1 NO_START=1'"
 
     $scriptCommand = "& '$installScript' $($scriptArgs -join ' ')"
     Write-Log -Message "Executing Falcon installation script with: $scriptCommand"
