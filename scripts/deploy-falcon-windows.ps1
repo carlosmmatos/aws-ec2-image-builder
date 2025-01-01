@@ -69,16 +69,31 @@ function Test-InputParams {
         "Tags",
         "ProxyHost",
         "ProxyPort",
-        "ProxyDisable",
         "AWSRegion"
     )
 
     foreach ($param in $inputParams) {
         $paramValue = Get-Variable -Name $param -ValueOnly
-        if ($paramValue -is [string]) {
+        Write-Log -Message "Processing parameter '$param' with initial value: '$paramValue'"
+
+        # Handle different parameter types
+        if ($param -eq "ProvisioningWaitTime") {
+            if (![string]::IsNullOrEmpty($paramValue)) {
+                if ([int]::TryParse($paramValue, [ref]$null)) {
+                    $paramValue = [int]$paramValue
+                    Write-Log -Message "Converted ProvisioningWaitTime to integer: $paramValue"
+                } else {
+                    Write-Log -Level "ERROR" -Message "ProvisioningWaitTime must be a valid integer value"
+                    exit 1
+                }
+            }
+        } elseif ($paramValue -is [string]) {
             $paramValue = $paramValue.Trim()
-            Set-Variable -Name $param -Value $paramValue -Scope Script
+            Write-Log -Message "Trimmed parameter '$param' to: '$paramValue'"
         }
+
+        Set-Variable -Name $param -Value $paramValue -Scope Script
+        Write-Log -Message "Final value set for '$param': '$paramValue'"
     }
 }
 

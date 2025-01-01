@@ -117,7 +117,7 @@ phases:
                 -Tags "{{ Tags }}" `
                 -ProxyHost "{{ ProxyHost }}" `
                 -ProxyPort "{{ ProxyPort }}" `
-                $(if ("{{ ProxyDisable }}" -eq "true") { "-ProxyDisable" }) `
+                $(if ("{{ ProxyDisable }}" -eq "true") { -ProxyDisable }) `
                 -AWSRegion "{{ AWSRegion }}"
 
   - name: validate
