@@ -105,20 +105,28 @@ phases:
         inputs:
           commands:
             - |
-              & "{{ build.DownloadScript.inputs[0].destination }}" `
-                -SecretStorageMethod "{{ SecretStorageMethod }}" `
-                -SecretsManagerSecretName "{{ SecretsManagerSecretName }}" `
-                -SSMFalconCloud "{{ SSMFalconCloud }}" `
-                -SSMFalconClientId "{{ SSMFalconClientId }}" `
-                -SSMFalconClientSecret "{{ SSMFalconClientSecret }}" `
-                -SensorUpdatePolicyName "{{ SensorUpdatePolicyName }}" `
-                -ProvisioningToken "{{ ProvisioningToken }}" `
-                -ProvisioningWaitTime "{{ ProvisioningWaitTime }}" `
-                -Tags "{{ Tags }}" `
-                -ProxyHost "{{ ProxyHost }}" `
-                -ProxyPort "{{ ProxyPort }}" `
-                $(if ("{{ ProxyDisable }}" -eq "true") { -ProxyDisable }) `
-                -AWSRegion "{{ AWSRegion }}"
+              $params = @(
+                "-SecretStorageMethod `"{{ SecretStorageMethod }}`""
+                "-SecretsManagerSecretName `"{{ SecretsManagerSecretName }}`""
+                "-SSMFalconCloud `"{{ SSMFalconCloud }}`""
+                "-SSMFalconClientId `"{{ SSMFalconClientId }}`""
+                "-SSMFalconClientSecret `"{{ SSMFalconClientSecret }}`""
+                "-SensorUpdatePolicyName `"{{ SensorUpdatePolicyName }}`""
+                "-ProvisioningToken `"{{ ProvisioningToken }}`""
+                "-ProvisioningWaitTime `"{{ ProvisioningWaitTime }}`""
+                "-Tags `"{{ Tags }}`""
+                "-ProxyHost `"{{ ProxyHost }}`""
+                "-ProxyPort `"{{ ProxyPort }}`""
+                "-AWSRegion `"{{ AWSRegion }}`""
+              )
+
+              if ("{{ ProxyDisable }}" -eq "true") {
+                  $params += "-ProxyDisable"
+              }
+
+              $command = "& `"{{ build.DownloadScript.inputs[0].destination }}`" $($params -join ' ')"
+              Write-Host "Executing command: $command"
+              Invoke-Expression $command
 
   - name: validate
     steps:
