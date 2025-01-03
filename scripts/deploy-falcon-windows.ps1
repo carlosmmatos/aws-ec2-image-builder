@@ -89,7 +89,7 @@ function Test-InputParams {
             }
         } elseif ($paramValue -is [string]) {
             $paramValue = $paramValue.Trim()
-            Write-Log -Message "Trimmed parameter '$param' to: '$paramValue'"
+            # Write-Log -Message "Trimmed parameter '$param' to: '$paramValue'"
         }
 
         Set-Variable -Name $param -Value $paramValue -Scope Script
@@ -197,7 +197,7 @@ try {
     $scriptArgs += "-InstallParams '/install /quiet /noreboot VDI=1 NO_START=1'"
 
     $scriptCommand = "& '$installScript' $($scriptArgs -join ' ')"
-    Write-Log -Message "Executing Falcon installation script with: $scriptCommand"
+    Write-Log -Message "Executing Falcon sensor installation script..."
     Invoke-Expression $scriptCommand
 }
 catch {
