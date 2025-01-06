@@ -4,9 +4,28 @@
 
 # AWS EC2 Image Builder Component for CrowdStrike Falcon Sensor
 
-This repository contains an AWS EC2 Image Builder component for Linux that installs and configures the CrowdStrike Falcon sensor, preparing it as a master/golden image for your AWS environment.
+This repository contains AWS EC2 Image Builder components for Linux and Windows that install and configure the CrowdStrike Falcon sensor, preparing it as a golden image for your AWS environment.
 
-The component automates the installation of the CrowdStrike Falcon sensor on an EC2 instance during the image building process. It's designed to be the final step in your image pipeline to ensure proper configuration and prevent interference from system reboots.
+The components automate the installation of the CrowdStrike Falcon sensor on an EC2 instance during the image building process. They're designed to be the final step in your image pipeline to ensure proper configuration and prevent interference from system reboots.
+
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [API Credentials](#api-credentials)
+  - [Generate API Keys](#generate-api-keys)
+  - [Base URL Mapping](#base-url-mapping)
+  - [Store API Credentials](#store-api-credentials)
+- [Installation](#installation)
+  - [Subscribe to the Component](#subscribe-to-the-component)
+  - [Add Component to Image Recipe](#add-component-to-image-recipe)
+- [Component Parameters](#component-parameters)
+- [How it Works](#how-it-works)
+  - [Linux Component](#linux-component)
+  - [Windows Component](#windows-component)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
+- [Support](#support)
 
 ## Prerequisites
 
@@ -132,30 +151,9 @@ To use this component in your EC2 Image Builder pipeline:
 > [!IMPORTANT]
 > Adding this component as the last step in your image recipe ensures that the sensor doesn't generate a new AID prior to shutdown.
 
-## How it Works
-
-The component will automatically execute during the image build process. It performs the following actions:
-
-### Build Phase
-
-> [!NOTE]
-> Due to a current limitation in EC2 Image Builder where the AWS CLI is not guaranteed to be pre-installed, this component includes the AWS provided `aws-cli-version-2` component as a dependency. This ensures the AWS CLI is available for use by the component.
-
-1. Retrieves the CrowdStrike API credentials from the specified secret store.
-
-1. Downloads and installs the CrowdStrike Falcon sensor.
-
-1. Configures the sensor for use as a master/golden image.
-
-### Validate Phase
-
-1. Ensures the AID is absent from the sensor prior to shutdown.
-
-### Test Phase
-
-1. Ensures the AID is present after a test instance is spun up.
-
 ## Component Parameters
+
+<details><summary>Linux Component Parameters</summary>
 
 | Parameter Name             | Type   | Description                                                                                                                               | Default                                 | Allowed Values                 |
 | -------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------       | ------------------------------ |
@@ -173,21 +171,101 @@ The component will automatically execute during the image build process. It perf
 | `ProxyPort`                | string | (Optional) The proxy port for the sensor to use when communicating with CrowdStrike.                                                      |                                         | N/A                            |
 | `Billing`                  | string | (Optional) The billing code to use for the sensor.                                                                                        |                                         | default, metered               |
 
+</details>
+
+<details><summary>Windows Component Parameters</summary>
+
+| Parameter Name             | Type   | Description                                                                                                                               | Default                                 | Allowed Values                 |
+| -------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------       | ------------------------------ |
+| `SecretStorageMethod`      | string | The secret backend to use which holds your API credentials.                                                                               | ***SecretsManager***                    | SecretsManager, ParameterStore |
+| `AWSRegion`                | string | The AWS Region where either the Secrets Manager secret or SSM Parameter Store parameter containing the Falcon API credentials are stored. | ***us-east-1***                         | N/A                            |
+| `SecretsManagerSecretName` | string | (***Required if using SecretsManager***) The name of the secret in Secrets Manager that contains the Falcon API credentials.              | ***/CrowdStrike/Falcon/Image-Builder*** | N/A                            |
+| `SSMFalconCloud`           | string | ***(Required if using ParameterStore)*** SSM Parameter Store name that contains the Falcon Cloud Region for the Falcon API credentials.   |                                         | N/A                            |
+| `SSMFalconClientId`        | string | ***(Required if using ParameterStore)*** SSM Parameter Store name that contains the Falcon Client Id for the Falcon API credentials.      |                                         | N/A                            |
+| `SSMFalconClientSecret`    | string | ***(Required if using ParameterStore)*** SSM Parameter Store name that contains the Falcon Client Secret for the Falcon API credentials.  |                                         | N/A                            |
+| `ProvisioningToken`        | string | (Optional) The provisioning/installation token to use for installing the sensor.                                                          |                                         | N/A                            |
+| `ProvisioningWaitTime`     | string | (Optional) Time to wait, in milliseconds, for sensor to provision before timing out.                                                      | ***1200000***                           | N/A                            |
+| `SensorUpdatePolicyName`   | string | The name of the sensor update policy to use for retrieving the sensor version.                                                           | ***platform_default***                   | N/A                            |
+| `Tags`                     | string | (Optional) A comma-separated list of tags to apply to the sensor.                                                                         |                                         | N/A                            |
+| `ProxyHost`                | string | (Optional) The proxy host for the sensor to use when communicating with CrowdStrike.                                                      |                                         | N/A                            |
+| `ProxyPort`                | string | (Optional) The proxy port for the sensor to use when communicating with CrowdStrike.                                                      |                                         | N/A                            |
+| `ProxyDisable`             | string | By default, the Falcon sensor for Windows automatically attempts to use any available proxy connections. Set to true to skip proxy detection. | ***false***                          | true, false                    |
+
+</details>
+
+## How it Works
+
+The components will automatically execute during the image build process. They perform the following actions:
+
+### Linux Component
+
+#### Build Phase
+
+> [!NOTE]
+> Due to a current limitation in EC2 Image Builder where the AWS CLI is not guaranteed to be pre-installed, this component includes the AWS provided `aws-cli-version-2` component as a dependency. This ensures the AWS CLI is available for use by the component.
+
+1. Downloads the necessary Bash scripts for installation.
+
+1. Ensures AWS CLI is available by installing the `aws-cli-version-2` component.
+
+1. Retrieves the CrowdStrike API credentials from the specified secret store.
+
+1. Downloads and installs the CrowdStrike Falcon sensor.
+
+1. Configures the sensor for use as a golden image.
+
+#### Validate Phase
+
+1. Ensures the AID is absent from the sensor prior to shutdown.
+
+#### Test Phase
+
+1. Ensures the AID is present after a test instance is spun up.
+
+### Windows Component
+
+#### Build Phase
+
+> [!NOTE]
+> Due to a current limitation in EC2 Image Builder where the AWS CLI is not guaranteed to be pre-installed, this component includes the AWS provided `aws-cli-version-2-windows` component as a dependency. This ensures the AWS CLI is available for use by the component.
+
+1. Downloads the necessary PowerShell scripts for installation.
+
+1. Ensures AWS CLI is available by installing the `aws-cli-version-2-windows` component.
+
+1. Retrieves the CrowdStrike API credentials from the specified secret store.
+
+1. Downloads and installs the CrowdStrike Falcon sensor.
+
+1. Configures the sensor for use as a golden image.
+
+#### Validate Phase
+
+1. Ensures the Falcon service (CSFalconService) is not running prior to image creation.
+
+#### Test Phase
+
+1. Verifies that the Falcon service (CSFalconService) is running properly on the test instance.
+
 ## Troubleshooting
 
 If you encounter issues:
 
 1. Check the EC2 Image Builder logs for detailed error messages.
-2. Verify that the instance profile has the correct IAM permissions.
-3. Ensure the API credentials are correctly stored and accessible.
+
+1. Verify that the instance profile has the correct IAM permissions.
+
+1. Ensure the API credentials are correctly stored and accessible.
 
 ## Contributing
 
 Contributions to improve the component are welcome. Please follow these steps:
 
 1. Fork the repository.
-2. Create a new branch for your feature or bug fix.
-3. Submit a pull request with a clear description of your changes.
+
+1. Create a new branch for your feature or bug fix.
+
+1. Submit a pull request with a clear description of your changes.
 
 ## License
 

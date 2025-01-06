@@ -2,19 +2,25 @@ name: crowdstrike-falcon-install-windows
 description: Deploy and Prepare CrowdStrike Falcon on Windows for Image Builder
 schemaVersion: 1.0
 parameters:
-  ### Authentication Parameters ###
   - SecretStorageMethod:
       type: string
-      default: "ParameterStore"
+      default: "SecretsManager"
       description:
         The secret backend to use which holds your API credentials. Accepted values
         are [SecretsManager, ParameterStore].
       allowedValues:
         - "SecretsManager"
         - "ParameterStore"
+  - AWSRegion:
+      type: string
+      default: "us-east-1"
+      description:
+        The AWS Region (e.g. us-east-1, eu-west-1) where either the Secrets Manager
+        secret or SSM Parameter Store parameter containing the Falcon API credentials are
+        stored.
   - SecretsManagerSecretName:
       type: string
-      default: " "
+      default: "/CrowdStrike/Falcon/Image-Builder"
       description:
         (Required if using SecretsManager) The name of the secret in Secrets Manager that contains the
         Falcon API credentials.
@@ -36,15 +42,18 @@ parameters:
       description:
         (Required if using ParameterStore) SSM Parameter Store name that contains the
         Falcon Client Secret for the Falcon API credentials.
-  ### Installation Parameters ###
   - ProvisioningToken:
       type: string
       default: " "
       description: (Optional) The provisioning/installation token to use for installing the sensor.
+  - ProvisioningWaitTime:
+      type: string
+      default: "1200000"
+      description: (Optional) Time to wait, in milliseconds, for sensor to provision before timing out.
   - SensorUpdatePolicyName:
       type: string
-      default: " "
-      description: (Optional) The name of the sensor update policy to use for retrieving the sensor version.
+      default: "platform_default"
+      description: The name of the sensor update policy to use for retrieving the sensor version.
   - Tags:
       type: string
       default: " "
@@ -57,10 +66,15 @@ parameters:
       type: string
       default: " "
       description: (Optional) The proxy port for the sensor to use when communicating with CrowdStrike.
-  - Billing:
+  - ProxyDisable:
       type: string
-      default: " "
-      description: (Optional) The billing code to use for the sensor. Accepted values are [default, metered].
+      default: "false"
+      description:
+        By default, the Falcon sensor for Windows automatically attempts to use any available proxy connections when it connects to the CrowdStrike cloud.
+        This parameter forces the sensor to skip those attempts and ignore any proxy configuration, including Windows Proxy Auto Detection. Accepted values are [true, false].
+      allowedValues:
+        - "true"
+        - "false"
 
 phases:
   - name: build
@@ -69,34 +83,73 @@ phases:
         action: WebDownload
         maxAttempts: 3
         inputs:
-          - source: "https://raw.githubusercontent.com/TheCyberian/aws-ec2-image-builder/refs/heads/main/scripts/deploy-falcon-windows.ps1"
-            destination: "C:\\Windows\\Temp\\deploy-falcon-build.ps1"
+          - source: "https://raw.githubusercontent.com/CrowdStrike/aws-ec2-image-builder/v1.1.1/scripts/deploy-falcon-windows.ps1"
+            destination: C:\Windows\Temp\deploy-falcon-build.ps1
+          - source: "https://raw.githubusercontent.com/crowdstrike/falcon-scripts/v1.7.2/powershell/install/falcon_windows_install.ps1"
+            destination: C:\Windows\Temp\falcon-windows-install.ps1
 
-      - name: FalconInstall
+      - name: InstallAWScli
+        action: ExecuteDocument
+        inputs:
+          document: arn:aws:imagebuilder:us-west-2:aws:component/aws-cli-version-2-windows/1.0.0/1
+
+      - name: ComponentTestingRequirement
+        action: ExecutePowerShell
+        inputs:
+          commands:
+            - >
+              # aws secretsmanager get-secret-value --secret-id "{{ SecretsManagerSecretName }}" --query 'SecretString' --output text --region "{{ AWSRegion }}"
+
+      - name: FalconPrep
         action: ExecutePowerShell
         inputs:
           commands:
             - |
-              cd "C:\\Windows\\Temp\\"
-              
-              .\deploy-falcon-build.ps1 -SecretStorageMethod "{{ SecretStorageMethod }}" `
-              -SecretsManagerSecretName "{{ SecretsManagerSecretName }}" -SSMFalconCloud "{{ SSMFalconCloud }}" `
-              -SSMFalconClientId "{{ SSMFalconClientId }}" -SSMFalconClientSecret "{{ SSMFalconClientSecret }}" `
-              -SensorUpdatePolicyName "{{ SensorUpdatePolicyName }}" -ProvToken "{{ ProvisioningToken }}" `
-              -Tags "{{ Tags }}" -ProxyHost "{{ ProxyHost }}" -ProxyPort "{{ ProxyPort }}" `
-              -Billing "{{ Billing }}"
-              
+              $params = @(
+                "-SecretStorageMethod `"{{ SecretStorageMethod }}`""
+                "-SecretsManagerSecretName `"{{ SecretsManagerSecretName }}`""
+                "-SSMFalconCloud `"{{ SSMFalconCloud }}`""
+                "-SSMFalconClientId `"{{ SSMFalconClientId }}`""
+                "-SSMFalconClientSecret `"{{ SSMFalconClientSecret }}`""
+                "-SensorUpdatePolicyName `"{{ SensorUpdatePolicyName }}`""
+                "-ProvisioningToken `"{{ ProvisioningToken }}`""
+                "-ProvisioningWaitTime `"{{ ProvisioningWaitTime }}`""
+                "-Tags `"{{ Tags }}`""
+                "-ProxyHost `"{{ ProxyHost }}`""
+                "-ProxyPort `"{{ ProxyPort }}`""
+                "-AWSRegion `"{{ AWSRegion }}`""
+              )
+
+              if ("{{ ProxyDisable }}" -eq "true") {
+                  $params += "-ProxyDisable"
+              }
+
+              $command = "& `"{{ build.DownloadScript.inputs[0].destination }}`" $($params -join ' ')"
+              Write-Host "Executing command: $command"
+              Invoke-Expression $command
+
   - name: validate
     steps:
-      - name: EnsureFalconExists
+      - name: EnsureFalconServiceIsNotRunning
         action: ExecutePowerShell
         inputs:
           commands:
             - |
-              if (Test-Path -Path "C:\\Program Files\\CrowdStrike") {
-                  Write-Host "Crowdstrike exists."
-              } else {
-                  Write-Host "Crowdstrike does not exist."
+              $serviceName = "CSFalconService"
+
+              try {
+                  $service = Get-Service -Name $serviceName -ErrorAction Stop
+                  if ($service.Status -eq 'Running') {
+                      throw "Error: The service $serviceName should not be running"
+                  } elseif ($service.Status -eq 'Stopped') {
+                      Write-Host "Validation passed: The service $serviceName exists and is stopped as expected"
+                  } else {
+                      throw "Error: The service $serviceName is in an unexpected state: $($service.Status)"
+                  }
+              } catch [Microsoft.PowerShell.Commands.ServiceCommandException] {
+                  throw "Error: The service $serviceName does not exist but it should"
+              } catch {
+                  throw $_.Exception.Message
               }
 
   - name: test
@@ -111,10 +164,14 @@ phases:
               try {
                   $service = Get-Service -Name $serviceName -ErrorAction Stop
                   if ($service.Status -eq 'Running') {
-                      Write-Host "The service $serviceName is running."
+                      Write-Host "Validation passed: The service $serviceName is running as expected"
+                  } elseif ($service.Status -eq 'Stopped') {
+                      throw "Error: The service $serviceName is stopped but should be running"
                   } else {
-                      Write-Host "The service $serviceName is not running."
+                      throw "Error: The service $serviceName is in an unexpected state: $($service.Status)"
                   }
+              } catch [Microsoft.PowerShell.Commands.ServiceCommandException] {
+                  throw "Error: The service $serviceName does not exist but it should"
               } catch {
-                  Write-Host "The service $serviceName does not exist."
+                  throw $_.Exception.Message
               }
