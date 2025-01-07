@@ -1,5 +1,8 @@
 name: crowdstrike-falcon-install-windows
-description: Deploy and Prepare CrowdStrike Falcon on Windows for Image Builder
+description:
+  Installs and configures the CrowdStrike Falcon sensor for Windows as a reusable template. This
+  component should be executed last in the build process to prevent premature reboots, which
+  could trigger unintended results.
 schemaVersion: 1.0
 parameters:
   - SecretStorageMethod:
@@ -91,7 +94,7 @@ phases:
       - name: InstallAWScli
         action: ExecuteDocument
         inputs:
-          document: arn:aws:imagebuilder:us-west-2:aws:component/aws-cli-version-2-windows/1.0.0/1
+          document: arn:aws:imagebuilder:us-east-1:aws:component/aws-cli-version-2-windows/1.0.0/1
 
       - name: ComponentTestingRequirement
         action: ExecutePowerShell
