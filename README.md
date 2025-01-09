@@ -75,6 +75,9 @@ The CrowdStrike API base URL is determined by the region where your CrowdStrike 
 
 Store the CrowdStrike API credentials in AWS Secrets Manager or AWS Systems Manager Parameter Store as SecretStrings. The component will use these credentials to authenticate with the CrowdStrike API.
 
+> [!IMPORTANT]
+> When storing API credentials in Secrets Manager or Parameter Store, ensure they are stored in the same AWS Region where the Image Pipeline will execute from.
+
 <details><summary>Using AWS Secrets Manager</summary>
 
 To use Secrets Manager as your secret backend, you must enter `SecretsManager` as the value for the `SecretStorageMethod` parameter when using the component.
