@@ -17,9 +17,7 @@ parameters:
   - AWSRegion:
       type: string
       default: "us-east-1"
-      description:
-        The AWS Region in which the Image Pipeline will execute from. This should also be the same
-        region where your Falcon API credentials are stored. (e.g. us-east-1, eu-west-1)
+      description: The AWS Region where the Image Pipeline executes and Falcon API credentials are stored.
   - SecretsManagerSecretName:
       type: string
       default: "/CrowdStrike/Falcon/Image-Builder"
